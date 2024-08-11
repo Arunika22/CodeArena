@@ -20,7 +20,25 @@ CodeVerse is an online coding platform that allows users to solve coding problem
 ### Setup Instructions
 
 1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/CodeVerse.git
 
-   ```bash
-   git clone https://github.com/your-username/CodeVerse.git
-   cd CodeVerse
+    cd CodeVerse
+   
+2. **Install the required dependencies:**
+    ```bash
+    pip install -r requirements.txt
+
+3. **Apply the database migrations:**
+
+     ```bash
+     python manage.py makemigrations
+     python manage.py migrate
+
+4. **Create a superuser to access the Django admin panel:**
+      ```bash
+      python manage.py createsuperuser
+
+5. **Run the development server:**
+      ```bash
+      python manage.py runserver
