@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ Online Compiler - CodeVerse</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'dashboard/css/compiler.css' %}">
+    <script src="{% static 'dashboard/js/compiler.js' %}?v=1.0"></script>
+
+    <meta name="csrf-token" content="{% csrf_token %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/closebrackets.min.js"></script> <!-- Auto-closing brackets -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/matchbrackets.min.js"></script> <!-- Matching brackets -->
+</head>
+
+
+<body>
+    <header>
+        <div class="logo">
+            <h1>Compiler</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'index' %}">Home</a></li>
+                  
+                <li><a href="#">Contest</a></li>
+                <li><a href="{% url 'compiler'%}">Compiler</a></li>
+                <li><a href="#">Discuss</a></li>
+               
+            </ul>
+            
+        </nav>
+        <div class="header-buttons">
+            <button class="login-btn"></button>
+            <button class="signup-btn"></button>
+        </div>
+    </header>
+    <div class="compiler-container">
+        <div class="left-pane">
+            <div class="editor">
+                <!-- Initialize CodeMirror on this div -->
+                <div id="cpp-editor"></div>
+            </div>
+            <div class="input">
+                <textarea id="user-input" placeholder="Enter input for your program..."></textarea>
+            </div>
+            <div class="controls">
+                <button id="run-code">Run Code</button>
+            </div>
+        </div>
+        <div class="right-pane">
+            <div class="output">
+                <h3>Output:</h3>
+                <pre id="output"></pre>
+            </div>
+        </div>
+        <div id="performance-metrics" class="performance-metrics" style="display: none;">
+            <div id="execution-time" class="execution-time"></div>
+            <div id="memory-usage" class="memory-usage"></div>
+        </div>
+    </div>
+</body>
+</html>

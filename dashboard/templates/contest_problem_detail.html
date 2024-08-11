@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ problem.title }}</title>
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/monokai.min.css">
+    <style>
+        /* Updated CSS for Side-by-Side Layout */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1{
+            color: blue;
+        }
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .problem-details, .code-editor {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .problem-details h1 {
+            color: blue; /* Change this color to your preferred color */
+            padding: 10px 0;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 2em; /* Increase font size for better emphasis */
+        }
+        .problem-details h2, .problem-details h3 {
+            color: #333; /* Normal black headings */
+            padding: 10px 0;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.5em; /* Increase font size for better readability */
+        }
+        .problem-details pre, .problem-details p {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 1em; /* Slightly increase the text size for readability */
+        }
+        .sample-block {
+            background-color: #e8f0ff; /* Light blue background for sample blocks */
+            border: 1px solid #007bff; /* Blue border */
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            white-space: pre-wrap; /* Preserve whitespace for better formatting */
+            font-family: 'Courier New', Courier, monospace; /* Monospaced font for code */
+        }
+        .CodeMirror {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            height: 500px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1em;
+            transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Problem Details Section -->
+        <div class="problem-details">
+            <h1 color = "blue">{{ problem.title }}</h1>
+
+            <h2>Description</h2>
+            <p>{{ problem.description }}</p>
+
+            <h2>Constraints</h2>
+            <p>{{ problem.constraints }}</p>
+
+            <h3>Sample Input</h3>
+            <div class="sample-block">{{ problem.testcase_input }}</div>
+
+            <h3>Sample Output</h3>
+            <div class="sample-block">{{ problem.testcase_output }}</div>
+        </div>
+
+        <!-- Code Editor Section -->
+        <div class="code-editor">
+            <h2>Submit Your Solution</h2>
+            <form method="POST" action="{% url 'submit_solution' problem.id %}">
+                {% csrf_token %}
+                <textarea id="code" name="code"></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/selection/active-line.min.js"></script>
+    
+    <script>
+        // Initialize CodeMirror
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            mode: "text/x-c++src",
+            theme: "monokai",
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            styleActiveLine: true,
+            indentUnit: 4,
+            tabSize: 4,
+            extraKeys: {
+                "Ctrl-Space": "autocomplete",
+                "Tab": function(cm) {
+                    cm.replaceSelection("    ", "end");
+                }
+            }
+        });
+
+        // Confirm before submitting
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const confirmation = confirm('Are you sure you want to submit this solution?');
+            if (!confirmation) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

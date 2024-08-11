@@ -1,0 +1,157 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: blue;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo h1 {
+    font-size: 24px;
+    color: white;
+}
+
+.header-content {
+    flex-grow: 1;
+    display: center;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    justify-content: center; /* Center nav items */
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+}
+
+nav ul li a:hover {
+    color: #007bff;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.login-btn, .signup-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #fff;
+    background-color: blue;
+}
+
+.hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align content */
+    padding: 50px 20px;
+    background-color: #e9ecef;
+    text-align: center; /* Center text */
+}
+
+.hero-content {
+    max-width: 80%; /* Control content width */
+}
+
+.hero-content h2 {
+    font-size: 36px;
+    color: blue;
+    margin-bottom: 20px;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align list items */
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.features-list li {
+    font-size: 18px;
+    color: #007bff;
+}
+
+.hero-image {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+}
+
+/* Dropdown button */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: transparent; /* Remove background color */
+    padding: 10px 20px; /* Adjust padding to match other tabs */
+    font-size: 18px;
+    color: white; /* Adjust font size to match other tabs */
+    text-decoration: none; /* Remove underline */
+    border: none; /* Remove border */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9; /* Background color */
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    top: 100%; /* Align dropdown content below the button */
+    left: 0;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black; /* Link color */
+    padding: 10px 15px; /* Padding for dropdown links */
+    text-decoration: none;
+    display: block;
+    font-size: 14px; /* Font size for dropdown links */
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: #ddd; /* Background color on hover */
+}
+
+/* Show the dropdown menu when the 'show' class is added */
+.dropdown-content.show {
+    display: block;
+}
+
+/* Ensures the dropdown aligns with other nav items */
+nav ul li {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}

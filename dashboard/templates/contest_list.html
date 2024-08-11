@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Contests</title>
+    <style>
+        /* Updated CSS for an impressive UI */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .add-contest-btn {
+            display: inline-block;
+            padding: 15px 25px;
+            background-color: blue
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            margin-bottom: 40px;
+            display: block;
+            width: 220px;
+            margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .add-contest-btn:hover {
+            background-color: #218838;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #007BFF, #00c6ff);
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #007BFF;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card p.details {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        .card p.details span {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .card p.description {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>All Contests</h1>
+        <a href="{% url 'add_contest' %}" class="add-contest-btn">Add Contest</a>
+        <div id="contest-list">
+            {% for contest in contests %}
+            <div class="card" data-id="{{ contest.id }}" data-name="{{ contest.name }}" data-description="{{ contest.description }}" data-start="{{ contest.start_time }}" data-end="{{ contest.end_time }}">
+                <h2><p> Contest :{{ contest.name }}</h2>
+                <p class="details">
+                    <span>Start Time:</span> {{ contest.start_time }}<br>
+                    <span>End Time:</span> {{ contest.end_time }}
+                </p>
+                <p class="description">{{ contest.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                window.location.href = `/contests/${id}/`;
+            });
+        });
+    </script>
+</body>
+</html>

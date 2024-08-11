@@ -1,0 +1,111 @@
+/* Styling for the problem detail page */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.problem-details {
+    width: 40%;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.problem-details h1 {
+    font-size: 24px;
+    color: #333;
+}
+
+.problem-details p {
+    font-size: 18px;
+    color: #555;
+}
+
+.code-editor {
+    width: 55%;
+    display: flex;
+    flex-direction: column;
+}
+
+#code-editor {
+    height: 400px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: darkblue;
+}
+
+#result {
+    margin-top: 20px;
+}
+
+#result h3 {
+    color: #333;
+}
+
+#output, #error {
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    white-space: pre-wrap; /* Preserve whitespace */
+}
+
+/* CodeMirror specific styles */
+.CodeMirror {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.CodeMirror-gutter {
+    background: #f4f4f4;
+    border-right: 1px solid #ddd;
+}
+
+.CodeMirror-lint-marker-error {
+    color: #d9534f;
+    background: #f2dede;
+    border: 1px solid #d9534f;
+    border-radius: 3px;
+}
+
+.CodeMirror-lint-tooltip {
+    background-color: #d9534f;
+    color: white;
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Custom error marker styling */
+.error-marker {
+    background-color: #f8d7da; /* Light red background */
+    color: #721c24; /* Dark red text color */
+    border: 1px solid #f5c6cb; /* Light red border */
+    border-radius: 3px;
+    padding: 2px;
+    font-size: 12px;
+}

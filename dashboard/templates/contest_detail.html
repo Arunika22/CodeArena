@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ contest.name }}</title>
+    <style>
+        /* Updated CSS for Contest Detail Page */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 85%;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px 40px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007BFF;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin-top: 40px;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px 0;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            font-size: 1em;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        td {
+            background-color: #fdfdfd;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #leaderboard-toggle {
+            cursor: pointer;
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        #leaderboard-toggle:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        #leaderboard.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><p>Contest :{{ contest.name }}</h1>
+        <p>{{ contest.description }}</p>
+        <p><strong>Start Time:</strong> {{ contest.start_time }}</p>
+        <p><strong>End Time:</strong> {{ contest.end_time }}</p>
+
+        <h2>Problems</h2>
+        <ul>
+            {% for problem in contest.problems.all %}
+            <li>
+                <a href="{% url 'contest_problem_detail' problem.id %}">{{ problem.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <h2 id="leaderboard-toggle">Leaderboard</h2>
+        <div id="leaderboard">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>User</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in leaderboard %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ entry.temporary_username }}</td>
+                        <td>{{ entry.total_score }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        // JavaScript for Contest Detail Page
+        document.addEventListener('DOMContentLoaded', function() {
+            const leaderboardToggle = document.getElementById('leaderboard-toggle');
+            const leaderboard = document.getElementById('leaderboard');
+
+            leaderboardToggle.addEventListener('click', function() {
+                leaderboard.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

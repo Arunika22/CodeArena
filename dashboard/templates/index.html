@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeVerse Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'dashboard/css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .header-content nav {
+            flex-grow: 1;
+        }
+
+        .header-content nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .header-content nav ul li {
+            margin: 0 15px;
+            position: relative; /* Added for dropdown positioning */
+        }
+
+        .header-content nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px;
+            display: block; /* Ensure the dropdown area is clickable */
+        }
+
+        .header-content nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Dropdown styling */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #007bff; /* Match the header background color */
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 5px;
+            top: 100%; /* Position below the parent item */
+            left: 0;
+        }
+
+        .dropdown-content a {
+            color: #fff; /* Make text white for better contrast */
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #0056b3; /* Darker shade for hover effect */
+        }
+
+        .show {display: block;}
+
+        .hero-section {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .hero-content h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .features-heading {
+            font-size: 24px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .features-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features-list li {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px;
+            width: 280px; /* Adjust width as needed */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .features-list li:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .features-list .solve-btn {
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .features-list .solve-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>CodeVerse</h1>
+        </div>
+        <div class="header-content">
+            <nav>
+                <ul>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn" onclick="toggleDropdown()">Problems</a>
+                        <div id="myDropdown" class="dropdown-content">
+                            <a href="{% url 'add_problem'%}">Add Problem</a>
+                            <a href="{% url 'solve_problem'%}">Solve Problem</a>
+                        </div>
+                    </li>
+                    <li><a href="{% url 'compiler'%}">Compiler</a></li>
+                    <li><a href="{% url 'contest_list'%}">Contest</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="hero-section">
+            <div class="hero-content">
+                <h2 id="typing-effect">CodeVerse, Your Coding Journey Simplified!</h2>
+                
+                <div class="features-heading">Top Interview Problems</div>
+                <ul class="features-list">
+                    {% for problem in problems %}
+                        <li>
+                            <span>{{ problem.title }}</span>
+                            <a href="{% url 'problem_detail' problem.id %}" class="solve-btn">Solve</a>
+                        </li>
+                    {% empty %}
+                        <li>No problems available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </main>
+    <script>
+        function toggleDropdown() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+        
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Typing effect
+        function typeEffect(element, speed) {
+            var text = element.innerHTML;
+            element.innerHTML = "";
+            var i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var heading = document.getElementById("typing-effect");
+            typeEffect(heading, 100); // Adjust speed (100ms per character)
+        });
+    </script>
+</body>
+</html>

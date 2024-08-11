@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Problem</title>
+    <link rel="stylesheet" href="{% static 'dashboard/css/add_problem.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Add a Coding Problem</h1>
+        <form id="ProblemForm" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Title</label>
+                {{ form.title }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.testcase_input.id_for_label }}">Test Case Input</label>
+                {{ form.testcase_input }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.testcase_output.id_for_label }}">Test Case Output</label>
+                {{ form.testcase_output }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.additional_testcase_input.id_for_label }}">Additional Test Case Input</label>
+                {{ form.additional_testcase_input }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.additional_testcase_output.id_for_label }}">Additional Test Case Output</label>
+                {{ form.additional_testcase_output }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.constraints.id_for_label }}">Constraints</label>
+                {{ form.constraints }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.editorial.id_for_label }}">Editorial</label>
+                {{ form.editorial }}
+            </div>
+            <button type="submit" class="btn-submit">Submit Problem</button>
+        </form>
+    </div>
+    <script src="{% static 'dashboard/js/add_problem.js' %}"></script>
+</body>
+</html>

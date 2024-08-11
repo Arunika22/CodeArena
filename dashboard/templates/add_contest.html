@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Contest</title>
+    <style>
+        /* CSS for Add Contest Page */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            width: 60%;
+            margin: 2% auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .form-footer {
+            text-align: center;
+        }
+        
+        .menu-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .menu-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .menu-button:hover {
+            background-color: #218838;
+        }
+        
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow: auto;
+        }
+        
+        .menu-content {
+            position: relative;
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-content label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .menu-content input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        
+        .menu-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .selected-problems {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        .selected-problems h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add a New Contest</h1>
+        <form method="POST" id="contest-form">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="error">{{ form.name.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="error">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.start_time.label_tag }}
+                <input type="datetime-local" name="start_time" id="start_time" value="{{ form.start_time.value|date:'Y-m-dTH:i' }}">
+                {% if form.start_time.errors %}
+                    <div class="error">{{ form.start_time.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.end_time.label_tag }}
+                <input type="datetime-local" name="end_time" id="end_time" value="{{ form.end_time.value|date:'Y-m-dTH:i' }}">
+                {% if form.end_time.errors %}
+                    <div class="error">{{ form.end_time.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <div class="menu-container">
+                    <button type="button" class="menu-button" id="select-problems-btn">Select Problems</button>
+                </div>
+                {% if form.problems.errors %}
+                    <div class="error">{{ form.problems.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group selected-problems" id="selected-problems">
+                <h3>Selected Problems</h3>
+                <p>No problems selected yet.</p>
+            </div>
+            <input type="hidden" name="selected_problems" id="selected_problems_input">
+
+            <div class="form-footer">
+                <button type="submit">Create Contest</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="menu-overlay" id="menu-overlay">
+        <div class="menu-content">
+            <button class="menu-close" id="menu-close">&times;</button>
+            <h2>Select Problems</h2>
+            {% for problem in problems %}
+                <label>
+                    <input type="checkbox" class="problem-checkbox" value="{{ problem.id }}"> {{ problem.title }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        
+            document.getElementById('select-problems-btn').addEventListener('click', function() {
+                document.getElementById('menu-overlay').style.display = 'block';
+            });
+        
+            document.getElementById('menu-close').addEventListener('click', function() {
+                document.getElementById('menu-overlay').style.display = 'none';
+            });
+        
+            window.addEventListener('click', function(event) {
+                if (event.target === document.getElementById('menu-overlay')) {
+                    document.getElementById('menu-overlay').style.display = 'none';
+                }
+            });
+        
+            document.querySelectorAll('.problem-checkbox').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    updateSelectedProblems();
+                });
+            });
+        
+            function updateSelectedProblems() {
+                const selectedProblemsContainer = document.getElementById('selected-problems');
+                const selectedCheckboxes = document.querySelectorAll('.problem-checkbox:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+                const selectedTitles = Array.from(selectedCheckboxes).map(cb => cb.nextSibling.textContent.trim());
+        
+                // Log selected IDs and titles for debugging
+                console.log('Selected IDs:', selectedIds);
+                console.log('Selected Titles:', selectedTitles);
+        
+                // Update hidden input field
+                document.getElementById('selected_problems_input').value = selectedIds.join(',');
+        
+                // Update display of selected problems
+                if (selectedTitles.length > 0) {
+                    selectedProblemsContainer.innerHTML = '<h3>Selected Problems</h3><ul>' + selectedTitles.map(title => '<li>' + title + '</li>').join('') + '</ul>';
+                } else {
+                    selectedProblemsContainer.innerHTML = '<h3>Selected Problems</h3><p>No problems selected yet.</p>';
+                }
+            }
+        </script>
+        
+    
+</body>
+</html>

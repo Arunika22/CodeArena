@@ -1,0 +1,241 @@
+static/dashboard/css/compiler.css
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: blue;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo h1 {
+    font-size: 24px;
+    color: white;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+}
+
+nav ul li a:hover {
+    color: #007bff;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.login-btn, .signup-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.login-btn {
+    background-color: blue;
+    color: #fff;
+}
+
+.signup-btn {
+    background-color: blue;
+    color: #fff;
+}
+
+.hero-section {
+    display: flex;
+    align-items: center;
+    padding: 50px 20px;
+    background-color: #e9ecef;
+}
+
+.hero-content {
+    max-width: 50%;
+}
+
+.hero-content h2 {
+    font-size: 36px;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.features-list li {
+    font-size: 18px;
+    color: #007bff;
+}
+
+
+
+/* Dropdown button */
+/* Dropdown button */
+.dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Style the dropdown button to match other tabs */
+.dropbtn {
+    background-color: transparent; /* Remove background color */
+    
+    padding:10px 20px;/* Adjust padding to match other tabs */
+    
+    font-size: 18px;
+    color: white; /* Adjust font size to match other tabs */
+    text-decoration: none; /* Remove underline */
+    border: none; /* Remove border */
+    cursor: pointer;
+    display: flex;
+    align-items:center;
+  }
+  
+ 
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9; /* Background color */
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    top: 100%; /* Align dropdown content below the button */
+    left: 0;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black; /* Link color */
+    padding: 10px 15px; /* Padding for dropdown links */
+    text-decoration: none;
+    display: block;
+    font-size: 14px; /* Font size for dropdown links */
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: #ddd; /* Background color on hover */
+}
+
+/* Show the dropdown menu when the 'show' class is added */
+.dropdown-content.show {
+    display: block;
+}
+
+/* Ensures the dropdown aligns with other nav items */
+nav ul li {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}
+
+.compiler-container {
+    width: 80%;
+    margin: 2% auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.editor textarea {
+    width: 100%;
+    height: 300px;
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: #e8f0ff;
+    color: #333;
+}
+
+.controls {
+    margin-top: 20px;
+    text-align: right;
+}
+
+#run-code {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#run-code:hover {
+    background-color: #0056b3;
+}
+
+.output {
+    margin-top: 30px;
+}
+
+.output h3 {
+    margin-bottom: 10px;
+}
+
+.output pre {
+    background-color: #e8f0ff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    color: #333;
+    font-family: 'Courier New', Courier, monospace;
+}
+.performance-metrics {
+    display: flex;
+    justify-content: space-between;
+    background-color: #007bff; /* Blue background similar to the button */
+    color: #fff; /* White text color */
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.performance-metrics div {
+    margin: 0;
+    font-size: 16px;
+}
+
+.performance-metrics .execution-time,
+.performance-metrics .memory-usage {
+    flex: 1;
+}
+/* body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+} */
