@@ -262,7 +262,7 @@ def parse_errors(error_output):
         if line.startswith('temp_code.cpp:'):
             parts = line.split(':')
             if len(parts) > 2:
-                line_number = parts[1]
+                line_number = int(parts[1]) - 1 
                 message = ':'.join(parts[2:])
                 errors.append({'line': line_number, 'message': message.strip()})
         else:
@@ -300,8 +300,11 @@ def execute_code(request, problem_id):
             print("Compilation stderr:\n", compile_result.stderr)
 
             if compile_result.returncode != 0:
-                errors = parse_errors(compile_result.stderr)
-                return JsonResponse({'error': 'Compilation Error', 'details': errors}, status=400)
+                # Return only the error without other fields if compilation fails
+                return JsonResponse({
+                    'error': compile_result.stderr  # Send the stderr output only
+                }, status=400)
+
 
             results = []
             for test_case in test_cases:
@@ -360,7 +363,6 @@ def execute_code(request, problem_id):
             return JsonResponse({'error': error_message}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 @csrf_exempt
 def submit_code(request, problem_id):
     if request.method == 'POST':

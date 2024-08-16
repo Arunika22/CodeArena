@@ -260,7 +260,7 @@
                 outputPre.textContent = ''; // Clear previous output
 
                 if (data.error) {
-                    outputPre.textContent = data.error;
+                    outputPre.textContent = `Error:\n${data.error}`;
                     resultMessage.textContent = ''; // Clear previous result message
                 } else {
                     let resultText = '';
