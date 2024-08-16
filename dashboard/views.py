@@ -70,7 +70,8 @@ def compile_code(request):
             body = json.loads(request.body)
             code = body.get('code', '')
             user_input = body.get('input', '')
-
+            print("Received code:\n", code)
+            
             if not code.strip():
                 return JsonResponse({'output': '', 'errors': 'Code is empty.'}, status=400)
 
@@ -253,25 +254,81 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Problem, TestCase
 
-@csrf_exempt
+
 def parse_errors(error_output):
-    # Function to parse the error output from the compiler or runtime
+  
     errors = []
     lines = error_output.splitlines()
+    
+    # Debug statement to show the raw error output
+    print("Raw error output:")
+    print(error_output)
+
     for line in lines:
-        if line.startswith('temp_code.cpp:'):
+        
+        print(f"Processing line: {line}")
+
+       
+        if 'error' in line.lower() or 'warning' in line.lower():
+            # Example format: 
+            # C:\path\to\file.cpp: line:column: error: message
             parts = line.split(':')
-            if len(parts) > 2:
-                line_number = int(parts[1]) - 1 
-                message = ':'.join(parts[2:])
-                errors.append({'line': line_number, 'message': message.strip()})
+            
+            # Debug statement to show parts after splitting by ':'
+            print(f"Split parts: {parts}")
+
+            if len(parts) >= 4:
+                try:
+                    # Extract line number and message, assuming format is consistent
+                    line_number = int(parts[2].strip())-1
+                    char_position = parts[3].strip() if len(parts) > 3 else ''
+                    message = ':'.join(parts[4:]).strip()
+                    
+                    # Debug statement to show extracted line number and message
+                    print(f"Extracted line number: {line_number}")
+                    print(f"Extracted character position: {char_position}")
+                    print(f"Extracted message: {message}")
+
+                    # Clean up the message to remove extra details
+                    if 'error' in message.lower() or 'warning' in message.lower():
+                        # Format message to remove extra details
+                        message_parts = message.split(':', 1)
+                        if len(message_parts) > 1:
+                            message = message_parts[1].strip()
+                        
+                        # Debug statement to show cleaned-up message
+                        print(f"Cleaned message: {message}")
+                        
+                    errors.append(f"Line {line_number}: Char {char_position}: {message}")
+                except IndexError as e:
+                    # Debug statement for handling IndexError
+                    print(f"IndexError encountered: {e}")
+                    errors.append(line.strip())
+            else:
+                # Debug statement for lines not matching expected format
+                print("Line does not match expected format")
+                errors.append(line.strip())
         else:
-            errors.append({'line': 'unknown', 'message': line.strip()})
+            # General errors without line and char info
+            print("General error line")
+            
+
+    # Return errors after processing all lines
     return errors
 
+
+
+
+
+import uuid
 @csrf_exempt
 def execute_code(request, problem_id):
     if request.method == 'POST':
+        unique_id = str(uuid.uuid4())
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        cpp_file = os.path.join(base_dir, f'temp_code_{unique_id}.cpp')
+        executable_file = os.path.join(base_dir, f'temp_code_{unique_id}.exe')
+
         try:
             data = json.loads(request.body)
             code = data.get('code')
@@ -286,9 +343,6 @@ def execute_code(request, problem_id):
             # Debug statement
             print(f"Fetched {test_cases.count()} test cases for problem ID {problem_id}")
 
-            cpp_file = 'temp_code.cpp'
-            executable_file = 'temp_code'
-
             # Save the code to a temporary file
             with open(cpp_file, 'w') as file:
                 file.write(code)
@@ -301,10 +355,8 @@ def execute_code(request, problem_id):
 
             if compile_result.returncode != 0:
                 # Return only the error without other fields if compilation fails
-                return JsonResponse({
-                    'error': compile_result.stderr  # Send the stderr output only
-                }, status=400)
-
+                parsed_errors = parse_errors(compile_result.stderr)
+                return JsonResponse({'error': parsed_errors}, status=400)
 
             results = []
             for test_case in test_cases:
@@ -329,14 +381,9 @@ def execute_code(request, problem_id):
                 print(f"Expected output:\n{test_case.output_data}")
 
                 # Determine if the test case passed
-                result_message = ''
-                if test_case.output_data.strip() == output.strip():
-                    result_message = 'Test case passed!'
-                else:
-                    result_message = 'Test case failed!'
+                result_message = 'Test case passed!' if test_case.output_data.strip() == output.strip() else 'Test case failed!'
                 print(f"Result message for input '{test_case.input_data}': {result_message}")
 
-                
                 results.append({
                     'input': test_case.input_data,
                     'output': output,
@@ -345,12 +392,7 @@ def execute_code(request, problem_id):
                     'result_message': result_message
                 })
 
-            # Cleanup
-            os.remove(cpp_file)
-            if os.path.exists(executable_file):
-                os.remove(executable_file)
-
-            # Prepare and return the response
+            # Return the results
             return JsonResponse({'results': results})
 
         except Problem.DoesNotExist:
@@ -361,8 +403,27 @@ def execute_code(request, problem_id):
         except Exception as e:
             error_message = f'An unexpected error occurred: {str(e)}'
             return JsonResponse({'error': error_message}, status=500)
+        finally:
+            try:
+                print(f"Attempting to delete CPP file: {cpp_file}")
+                print(f"Attempting to delete executable file: {executable_file}")
+
+                if os.path.exists(cpp_file):
+                    os.remove(cpp_file)
+                    print(f"Deleted temporary CPP file: {cpp_file}")
+                else:
+                    print(f"CPP file {cpp_file} does not exist.")
+
+                if os.path.exists(executable_file):
+                    os.remove(executable_file)
+                    print(f"Deleted temporary executable file: {executable_file}")
+                else:
+                    print(f"Executable file {executable_file} does not exist.")
+            except Exception as e:
+                print(f"Error deleting files: {str(e)}")
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 @csrf_exempt
 def submit_code(request, problem_id):
     if request.method == 'POST':
@@ -377,8 +438,10 @@ def submit_code(request, problem_id):
             problem = Problem.objects.get(id=problem_id)
             test_cases = problem.test_cases.filter(is_sample=False)  # Fetch additional test cases
 
-            cpp_file = 'temp_code.cpp'
-            executable_file = 'temp_code'
+            unique_id = str(uuid.uuid4())
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            cpp_file = os.path.join(base_dir, f'temp_code_{unique_id}.cpp')
+            executable_file = os.path.join(base_dir, f'temp_code_{unique_id}.exe')
 
             # Save the code to a temporary file
             with open(cpp_file, 'w') as file:
@@ -391,8 +454,8 @@ def submit_code(request, problem_id):
             print("Compilation stderr:\n", compile_result.stderr)
 
             if compile_result.returncode != 0:
-                errors = parse_errors(compile_result.stderr)
-                return JsonResponse({'error': 'Compilation Error', 'details': errors}, status=400)
+                parsed_errors = parse_errors(compile_result.stderr)
+                return JsonResponse({'error': parsed_errors}, status=400)
 
             results = []
             for test_case in test_cases:
@@ -445,7 +508,23 @@ def submit_code(request, problem_id):
         except Exception as e:
             error_message = f'An unexpected error occurred: {str(e)}'
             return JsonResponse({'error': error_message}, status=500)
+        finally:
+            try:
+                
 
+                if os.path.exists(cpp_file):
+                    os.remove(cpp_file)
+                   
+                else:
+                    print(f"CPP file {cpp_file} does not exist.")
+
+                if os.path.exists(executable_file):
+                    os.remove(executable_file)
+                   
+                else:
+                    print(f"Executable file {executable_file} does not exist.")
+            except Exception as e:
+                print(f"Error deleting files: {str(e)}")
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
