@@ -167,17 +167,73 @@ def extract_error_lines(errors):
 
     return '\n'.join(error_lines)
 
+from django.shortcuts import render, redirect
+from .forms import ProblemForm
+from .models import Problem, TestCase
+from django.shortcuts import render, redirect
+from .forms import ProblemForm
+from .models import Problem, TestCase
 
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from .forms import ProblemForm
+from .models import TestCase, Problem
 
 def add_problem(request):
     if request.method == 'POST':
         form = ProblemForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('solve_problem')  # Redirect to a list view or any other page
+            # Save the problem and get the instance
+            problem = form.save()
+            
+            # Handle saving test cases
+            test_case_input_keys = [key for key in request.POST if key.startswith('testcase_input_')]
+            for input_key in test_case_input_keys:
+                index = input_key.split('_')[-1]
+                test_case = TestCase(
+                    problem=problem,
+                    input_data=request.POST.get(f'testcase_input_{index}'),
+                    output_data=request.POST.get(f'testcase_output_{index}'),
+                    is_sample=True  # Assuming all test cases are sample
+                )
+                test_case.save()
+            
+            # Handle saving additional test cases
+            additional_test_case_input_keys = [key for key in request.POST if key.startswith('additional_testcase_input_')]
+            for input_key in additional_test_case_input_keys:
+                index = input_key.split('_')[-1]
+                test_case = TestCase(
+                    problem=problem,
+                    input_data=request.POST.get(f'additional_testcase_input_{index}'),
+                    output_data=request.POST.get(f'additional_testcase_output_{index}'),
+                    is_sample=False  # Assuming additional test cases are not sample
+                )
+                test_case.save()
+            
+            # Debugging information
+            print(f"Problem added with ID: {problem.id}")
+            print("Redirecting to solve_problem...")
+
+            # JSON response for AJAX
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'redirect_url': '/solve/'})
+            
+            # Redirect to 'solve_problem'
+            return redirect('solve_problem')
+        else:
+            # If form is not valid, log errors and return JSON response
+            print("Form is not valid.")
+            print(form.errors)
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors})
     else:
         form = ProblemForm()
+    
     return render(request, 'add_problem.html', {'form': form})
+
+
+
+
 
 def solve_problem(request):
     problems = Problem.objects.all()
@@ -190,72 +246,101 @@ import subprocess
 import os
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 import subprocess
 import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Problem, TestCase
+
 @csrf_exempt
-def execute_code(request):
+def parse_errors(error_output):
+    # Function to parse the error output from the compiler or runtime
+    errors = []
+    lines = error_output.splitlines()
+    for line in lines:
+        if line.startswith('temp_code.cpp:'):
+            parts = line.split(':')
+            if len(parts) > 2:
+                line_number = parts[1]
+                message = ':'.join(parts[2:])
+                errors.append({'line': line_number, 'message': message.strip()})
+        else:
+            errors.append({'line': 'unknown', 'message': line.strip()})
+    return errors
+
+@csrf_exempt
+def execute_code(request, problem_id):
     if request.method == 'POST':
         try:
-            # Load and debug the request data
             data = json.loads(request.body)
             code = data.get('code')
-            additional_testcase_input = data.get('additional_testcase_input', '')
-            additional_testcase_output = data.get('additional_testcase_output', '')
 
-            print("Received request data:")
-            print(f"Code:\n{code}")
-            print(f"Test case input:\n{additional_testcase_input}")
-            print(f"Expected Output:\n{additional_testcase_output}")
+            # Debug statement
+            print("Received code:\n", code)
+
+            # Fetch the problem by ID
+            problem = Problem.objects.get(id=problem_id)
+            test_cases = problem.test_cases.filter(is_sample=True)
+
+            # Debug statement
+            print(f"Fetched {test_cases.count()} test cases for problem ID {problem_id}")
 
             cpp_file = 'temp_code.cpp'
             executable_file = 'temp_code'
 
-            # Save and compile
+            # Save the code to a temporary file
             with open(cpp_file, 'w') as file:
                 file.write(code)
-            print(f"Saved code to {cpp_file}")
 
             # Compile the code
-            print(f"Compiling {cpp_file}...")
             compile_result = subprocess.run(['g++', cpp_file, '-o', executable_file], capture_output=True, text=True)
-            
-            # Print compilation details
-            print("Compilation output:")
-            print(compile_result.stdout)
-            print("Compilation errors:")
-            print(compile_result.stderr)
+
+            # Debug statement
+            print("Compilation stderr:\n", compile_result.stderr)
 
             if compile_result.returncode != 0:
-                return JsonResponse({'error': 'Compilation Error:\n' + compile_result.stderr}, status=400)
+                errors = parse_errors(compile_result.stderr)
+                return JsonResponse({'error': 'Compilation Error', 'details': errors}, status=400)
 
-            # Run the compiled executable with example test cases
-            print(f"Running {executable_file} with provided test case input...")
-            run_result = subprocess.run(
-                [executable_file],
-                input=additional_testcase_input,
-                text=True,
-                capture_output=True
-            )
+            results = []
+            for test_case in test_cases:
+                # Debug statement
+                print(f"Running test case with input:\n{test_case.input_data}")
 
-            # Print execution details
-            print("Execution output:")
-            print(run_result.stdout)
-            print("Execution errors:")
-            print(run_result.stderr)
+                # Run the compiled executable with the test case input
+                run_result = subprocess.run(
+                    [executable_file],
+                    input=test_case.input_data,
+                    text=True,
+                    capture_output=True
+                )
 
-            output = run_result.stdout
-            errors = run_result.stderr
+                output = run_result.stdout
+                errors = run_result.stderr
 
-            # Determine if the additional test case passed
-            result_message = ''
-            if additional_testcase_output.strip() == output.strip():
-                result_message = 'Test case passed!'
-            else:
-                result_message = 'Test case failed!'
+                # Debug statement
+                print(f"Test case input:\n{test_case.input_data}")
+                print(f"Test case output:\n{output}")
+                print(f"Test case errors:\n{errors}")
+                print(f"Expected output:\n{test_case.output_data}")
+
+                # Determine if the test case passed
+                result_message = ''
+                if test_case.output_data.strip() == output.strip():
+                    result_message = 'Test case passed!'
+                else:
+                    result_message = 'Test case failed!'
+                print(f"Result message for input '{test_case.input_data}': {result_message}")
+
+                
+                results.append({
+                    'input': test_case.input_data,
+                    'output': output,
+                    'errors': errors,
+                    'expected_output': test_case.output_data,
+                    'result_message': result_message
+                })
 
             # Cleanup
             os.remove(cpp_file)
@@ -263,44 +348,119 @@ def execute_code(request):
                 os.remove(executable_file)
 
             # Prepare and return the response
-            response_data = {
-                'input': additional_testcase_input,
-                'output': output,
-                'errors': errors,
-                'expected_output': additional_testcase_output,
-                'result_message': result_message
-            }
-            print("Response data:")
-            print(response_data)
-            
-            return JsonResponse(response_data)
+            return JsonResponse({'results': results})
 
+        except Problem.DoesNotExist:
+            return JsonResponse({'error': 'Problem not found'}, status=404)
         except json.JSONDecodeError as e:
             error_message = f'Invalid JSON format: {str(e)}'
-            print(f"Error: {error_message}")
             return JsonResponse({'error': error_message}, status=400)
         except Exception as e:
             error_message = f'An unexpected error occurred: {str(e)}'
-            print(f"Error: {error_message}")
             return JsonResponse({'error': error_message}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 @csrf_exempt
-def submit_code(request):
+def submit_code(request, problem_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             code = data.get('code')
 
-            # Process the code submission (e.g., save it to the database)
-            # For demonstration, we'll just return a success message
-            return JsonResponse({'message': 'Code submitted successfully!'})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            # Debug statement
+            print("Received code:\n", code)
 
-def problem_detail(request, id):
-    problem = get_object_or_404(Problem, id=id)
-    return render(request, 'problem_detail.html', {'problem': problem})
+            # Fetch the problem by ID
+            problem = Problem.objects.get(id=problem_id)
+            test_cases = problem.test_cases.filter(is_sample=False)  # Fetch additional test cases
+
+            cpp_file = 'temp_code.cpp'
+            executable_file = 'temp_code'
+
+            # Save the code to a temporary file
+            with open(cpp_file, 'w') as file:
+                file.write(code)
+
+            # Compile the code
+            compile_result = subprocess.run(['g++', cpp_file, '-o', executable_file], capture_output=True, text=True)
+
+            # Debug statement
+            print("Compilation stderr:\n", compile_result.stderr)
+
+            if compile_result.returncode != 0:
+                errors = parse_errors(compile_result.stderr)
+                return JsonResponse({'error': 'Compilation Error', 'details': errors}, status=400)
+
+            results = []
+            for test_case in test_cases:
+                # Debug statement
+                print(f"Running additional test case with input:\n{test_case.input_data}")
+
+                # Run the compiled executable with the test case input
+                run_result = subprocess.run(
+                    [executable_file],
+                    input=test_case.input_data,
+                    text=True,
+                    capture_output=True
+                )
+
+                output = run_result.stdout
+                errors = run_result.stderr
+
+                # Debug statement
+                print(f"Additional test case output:\n{output}")
+                print(f"Additional test case errors:\n{errors}")
+
+                # Determine if the test case passed
+                result_message = ''
+                if test_case.output_data.strip() == output.strip():
+                    result_message = 'All test cases passed!'
+                else:
+                    result_message = 'Test cases failed!'
+
+                results.append({
+                    'input': test_case.input_data,
+                    'output': output,
+                    'errors': errors,
+                    'expected_output': test_case.output_data,
+                    'result_message': result_message
+                })
+
+            # Cleanup
+            os.remove(cpp_file)
+            if os.path.exists(executable_file):
+                os.remove(executable_file)
+
+            # Prepare and return the response
+            return JsonResponse({'results': results})
+
+        except Problem.DoesNotExist:
+            return JsonResponse({'error': 'Problem not found'}, status=404)
+        except json.JSONDecodeError as e:
+            error_message = f'Invalid JSON format: {str(e)}'
+            return JsonResponse({'error': error_message}, status=400)
+        except Exception as e:
+            error_message = f'An unexpected error occurred: {str(e)}'
+            return JsonResponse({'error': error_message}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+
+
+
+
+def problem_detail(request,problem_id):
+    
+    problem = get_object_or_404(Problem, pk=problem_id)
+    sample_test_cases = problem.test_cases.filter(is_sample=True)
+    context = {
+        'problem': problem,
+        'sample_test_cases': sample_test_cases
+    }
+    return render(request, 'problem_detail.html', context)
+    
 
 
 

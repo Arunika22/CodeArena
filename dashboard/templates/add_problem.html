@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <h1>Add a Coding Problem</h1>
-        <form id="ProblemForm" method="POST">
+        <form id="ProblemForm" method="POST" action="{% url 'add_problem' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="{{ form.title.id_for_label }}">Title</label>
@@ -20,22 +20,35 @@
                 <label for="{{ form.description.id_for_label }}">Description</label>
                 {{ form.description }}
             </div>
+
             <div class="form-group">
-                <label for="{{ form.testcase_input.id_for_label }}">Test Case Input</label>
-                {{ form.testcase_input }}
+                <h3>Test Cases</h3>
+                <div id="testcase-section">
+                    <div class="testcase-group">
+                        <label for="testcase-input-0">Test Case Input</label>
+                        <input type="text" name="testcase_input_0" class="testcase-input" required>
+                        <label for="testcase-output-0">Test Case Output</label>
+                        <input type="text" name="testcase_output_0" class="testcase-output" required>
+                        <button type="button" class="btn-remove-testcase" onclick="removeTestcase(this)">Remove</button>
+                    </div>
+                </div>
+                <button type="button" id="add-testcase-btn" class="btn-add">Add Test Case</button>
             </div>
+
             <div class="form-group">
-                <label for="{{ form.testcase_output.id_for_label }}">Test Case Output</label>
-                {{ form.testcase_output }}
+                <h3>Additional Test Cases</h3>
+                <div id="additional-testcase-section">
+                    <div class="additional-testcase-group">
+                        <label for="additional-testcase-input-0">Additional Test Case Input</label>
+                        <input type="text" name="additional_testcase_input_0" class="additional-testcase-input" required>
+                        <label for="additional-testcase-output-0">Additional Test Case Output</label>
+                        <input type="text" name="additional_testcase_output_0" class="additional-testcase-output" required>
+                        <button type="button" class="btn-remove-additional-testcase" onclick="removeTestcase(this)">Remove</button>
+                    </div>
+                </div>
+                <button type="button" id="add-additional-testcase-btn" class="btn-add">Add Additional Test Case</button>
             </div>
-            <div class="form-group">
-                <label for="{{ form.additional_testcase_input.id_for_label }}">Additional Test Case Input</label>
-                {{ form.additional_testcase_input }}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.additional_testcase_output.id_for_label }}">Additional Test Case Output</label>
-                {{ form.additional_testcase_output }}
-            </div>
+
             <div class="form-group">
                 <label for="{{ form.constraints.id_for_label }}">Constraints</label>
                 {{ form.constraints }}
@@ -44,6 +57,7 @@
                 <label for="{{ form.editorial.id_for_label }}">Editorial</label>
                 {{ form.editorial }}
             </div>
+
             <button type="submit" class="btn-submit">Submit Problem</button>
         </form>
     </div>

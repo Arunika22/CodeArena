@@ -3,22 +3,44 @@ from django.contrib.auth.models import User
 import uuid
 
 # models.py
+# class Problem(models.Model):
+#     id = models.AutoField(primary_key=True) 
+#     title = models.CharField(max_length=200)
+#     description = models.TextField()
+#     testcase_input = models.TextField()
+#     testcase_output = models.TextField()
+#     additional_testcase_input = models.TextField()
+#     additional_testcase_output = models.TextField()
+#     constraints = models.TextField()
+#     editorial = models.TextField()
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+    # def __str__(self):
+    #     return self.title
+
+from django.db import models
+
 class Problem(models.Model):
-    id = models.AutoField(primary_key=True) 
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    testcase_input = models.TextField()
-    testcase_output = models.TextField()
-    additional_testcase_input = models.TextField()
-    additional_testcase_output = models.TextField()
     constraints = models.TextField()
     editorial = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+    
 
-from django.db import models
+class TestCase(models.Model):
+    problem = models.ForeignKey(Problem, related_name='test_cases', on_delete=models.CASCADE)
+    input_data = models.TextField()
+    output_data = models.TextField()
+    is_sample = models.BooleanField(default=False)  # Use this to distinguish between sample and additional test cases
+
+    def __str__(self):
+        return f"Test Case for {self.problem.title} - Sample: {self.is_sample}"
+
 from django.contrib.auth.models import User
 
 class Contest(models.Model):
