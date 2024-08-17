@@ -1,152 +1,650 @@
+{% comment %} {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ problem.title }}</title>
-    <!-- CodeMirror CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/monokai.min.css">
+    
+    <!-- CodeMirror CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/display/fullscreen.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/fold/foldgutter.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/mode/clike/clike.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/display/fullscreen.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/display/autorefresh.min.js"></script>
+
     <style>
-        /* Updated CSS for Side-by-Side Layout */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
             margin: 0;
             padding: 0;
-        }
-        h1{
-            color: blue;
+            background-color: #f4f4f4;
         }
         .container {
-            width: 90%;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            display: flex;
-            gap: 20px;
-        }
-        .problem-details, .code-editor {
-            flex: 1;
             background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .problem-details h1 {
-            color: blue; /* Change this color to your preferred color */
-            padding: 10px 0;
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 2em; /* Increase font size for better emphasis */
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
         }
-        .problem-details h2, .problem-details h3 {
-            color: #333; /* Normal black headings */
-            padding: 10px 0;
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.5em; /* Increase font size for better readability */
+        .editor-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
         }
-        .problem-details pre, .problem-details p {
-            padding: 15px;
+        .editor, .problem-details {
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+        .editor {
+            border: 1px solid #ccc;
             background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 1em; /* Slightly increase the text size for readability */
-        }
-        .sample-block {
-            background-color: #e8f0ff; /* Light blue background for sample blocks */
-            border: 1px solid #007bff; /* Blue border */
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            white-space: pre-wrap; /* Preserve whitespace for better formatting */
-            font-family: 'Courier New', Courier, monospace; /* Monospaced font for code */
+            display: flex;
+            flex-direction: column;
+            height: 600px;
         }
         .CodeMirror {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            height: 500px;
+            height: 100%;
+            width: 100%;
         }
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
+        .problem-details {
+            border: 1px solid #ddd;
+            background-color: #ffffff;
+            margin-right: 20px;
+        }
+        .problem-details h2 {
+            margin-top: 0;
+        }
+        .problem-details pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 3px;
+            overflow: auto;
+        }
+        .button-container {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        button, select {
+            padding: 10px 15px;
+            margin: 5px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
-            font-size: 1em;
-            transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+        }
+        button {
+            color: #fff;
+            background-color: #007bff;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #0056b3;
+        }
+        select {
+            background-color: #f9f9f9;
+        }
+        #fullscreen-btn {
+            float: right;
+        }
+        #output-panel {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f0f0f0;
+        }
+        .input-output {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .input-output h3 {
+            margin-top: 0;
+        }
+        .btn-back {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            text-align: center;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+        .fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .fullscreen-container .editor {
+            width: 80%;
+            height: 80%;
+            border: none;
+            background-color: #000;
+        }
+        .fullscreen-container .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #333;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Problem Details Section -->
-        <div class="problem-details">
-            <h1 color = "blue">{{ problem.title }}</h1>
-
-            <h2>Description</h2>
-            <p>{{ problem.description }}</p>
-
-            <h2>Constraints</h2>
-            <p>{{ problem.constraints }}</p>
-
-            <h3>Sample Input</h3>
-            <div class="sample-block">{{ problem.testcase_input }}</div>
-
-            <h3>Sample Output</h3>
-            <div class="sample-block">{{ problem.testcase_output }}</div>
+        <h1>{{ problem.title }}</h1>
+        <div class="editor-container">
+            <div class="problem-details">
+                <h2>Problem Description</h2>
+                <p>{{ problem.description }}</p>
+                <h2>Sample Test Cases</h2>
+                {% for testcase in sample_test_cases %}
+                <div class="input-output">
+                    <h3>Input</h3>
+                    <pre>{{ testcase.input_data }}</pre>
+                    <h3>Output</h3>
+                    <pre>{{ testcase.output_data }}</pre>
+                </div>
+                {% empty %}
+                <p>No sample test cases available.</p>
+                {% endfor %}
+                <h2>Constraints</h2>
+                <p>{{ problem.constraints }}</p>
+            </div>
+            <div class="editor">
+                <textarea id="code-editor" name="code" placeholder="Write your code here..."></textarea>
+                <div class="button-container">
+                    <button id="run-code">Run</button>
+                    <button id="submit-code">Submit</button>
+                    <button id="fullscreen-btn">Toggle Fullscreen</button>
+                    <select id="theme-select">
+                        <option value="default">Default</option>
+                        <option value="dracula">Dracula</option>
+                        <option value="eclipse">Eclipse</option>
+                    </select>
+                    <select id="fontsize-select">
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                    </select>
+                </div>
+            </div>
         </div>
+        <div id="output-panel" style="display: none;">
+            <h2>Output</h2>
+            <pre id="output"></pre>
+            <p id="result-message" class="test-case-status"></p>
+        </div>
+        <a href="{% url 'solve_problem' %}" class="btn-back">Back to Problems List</a>
+    </div>
 
-        <!-- Code Editor Section -->
-        <div class="code-editor">
-            <h2>Submit Your Solution</h2>
-            <form method="POST" action="{% url 'submit_solution' problem.id %}">
-                {% csrf_token %}
-                <textarea id="code" name="code"></textarea>
-                <button type="submit">Submit</button>
-            </form>
+    <div class="fullscreen-container" id="fullscreen-container">
+        <button class="btn-back" id="fullscreen-back-btn">Back to Previous View</button>
+        <div class="editor">
+            <textarea id="fullscreen-code-editor" name="code" placeholder="Write your code here..."></textarea>
         </div>
     </div>
     
-    <!-- CodeMirror JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/selection/active-line.min.js"></script>
-    
     <script>
-        // Initialize CodeMirror
-        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-            mode: "text/x-c++src",
-            theme: "monokai",
-            lineNumbers: true,
-            autoCloseBrackets: true,
-            matchBrackets: true,
-            styleActiveLine: true,
-            indentUnit: 4,
-            tabSize: 4,
-            extraKeys: {
-                "Ctrl-Space": "autocomplete",
-                "Tab": function(cm) {
-                    cm.replaceSelection("    ", "end");
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize CodeMirror
+            const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                mode: 'text/x-c++src',
+                lineNumbers: true,
+                theme: 'default',
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                lineWrapping: true,
+                autoRefresh: true,
+                styleActiveLine: true
+            });
+
+            // Prettify code by default after a change in editor
+            editor.on('change', () => {
+                editor.setValue(CodeMirror.autoFormatRange(editor, {line: 0, ch: 0}, {line: editor.lineCount(), ch: 0}));
+            });
+
+            // Handle theme change
+            document.getElementById('theme-select').addEventListener('change', (e) => {
+                editor.setOption('theme', e.target.value);
+            });
+
+            // Handle font size change
+            document.getElementById('fontsize-select').addEventListener('change', (e) => {
+                editor.getWrapperElement().style.fontSize = e.target.value;
+                editor.refresh();
+            });
+
+            // Fullscreen toggle
+            document.getElementById('fullscreen-btn').addEventListener('click', () => {
+                editor.setOption('fullScreen', !editor.getOption('fullScreen'));
+            });
+
+            // Handle response for run and submit actions
+            function handleResponse(data) {
+                const outputPanel = document.getElementById('output-panel');
+                const outputPre = document.getElementById('output');
+                const resultMessage = document.getElementById('result-message');
+
+                outputPanel.style.display = 'block';
+                outputPre.textContent = ''; // Clear previous output
+
+                if (data.error) {
+                    outputPre.textContent = `Error:\n${data.error}`;
+                    resultMessage.textContent = ''; // Clear previous result message
+                } else {
+                    let resultText = '';
+                    data.results.forEach(result => {
+                        resultText += `Input:\n${result.input}\n\n`;
+                        resultText += `Output:\n${result.output}\n\n`;
+                        resultText += `Expected Output:\n${result.expected_output}\n\n`;
+                        resultText += `Errors:\n${result.errors}\n\n`;
+                        resultText += `Result Message:\n${result.result_message}\n\n`;
+                    });
+
+                    outputPre.textContent = resultText.trim();
+                    resultMessage.textContent = ''; // Clear previous result message if needed
                 }
             }
-        });
 
-        // Confirm before submitting
-        document.querySelector('form').addEventListener('submit', function(event) {
-            const confirmation = confirm('Are you sure you want to submit this solution?');
-            if (!confirmation) {
-                event.preventDefault();
+        
+            document.getElementById('run-code').addEventListener('click', () => {
+                const code = editor.getValue();
+                const problemId = {{ problem.id }};  // Dynamically fetch the problem ID
+                fetch(`/execute_code/${problemId}/`, {  // Include problem ID in the URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ code: code })
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    handleResponse({ error: 'Error occurred' });
+                });
+            });
+        
+            document.getElementById('submit-code').addEventListener('click', () => {
+                const code = editor.getValue();
+                const problemId = {{ problem.id }};  // Dynamically fetch the problem ID
+                fetch(`/problem/${problemId}/submit/`, {  // Corrected URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ code: code })
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    handleResponse({ error: 'Error occurred' });
+                });
+            });
+            
+        });
+        
+    </script>
+    
+</body>
+</html> {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ problem.title }}</title>
+    
+    <!-- CodeMirror CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/display/fullscreen.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/fold/foldgutter.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/mode/clike/clike.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/display/fullscreen.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/display/autorefresh.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .editor-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .editor, .problem-details {
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+        .editor {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        .CodeMirror {
+            height: 100%;
+            width: 100%;
+        }
+        .problem-details {
+            border: 1px solid #ddd;
+            background-color: #ffffff;
+            margin-right: 20px;
+        }
+        .problem-details h2 {
+            margin-top: 0;
+        }
+        .problem-details pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 3px;
+            overflow: auto;
+        }
+        .button-container {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        button, select {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            color: #fff;
+            background-color: #007bff;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        select {
+            background-color: #f9f9f9;
+        }
+        #fullscreen-btn {
+            float: right;
+        }
+        #output-panel {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f0f0f0;
+        }
+        .input-output {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .input-output h3 {
+            margin-top: 0;
+        }
+        .btn-back {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            text-align: center;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+        .fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .fullscreen-container .editor {
+            width: 80%;
+            height: 80%;
+            border: none;
+            background-color: #000;
+        }
+        .fullscreen-container .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ problem.title }}</h1>
+        <div class="editor-container">
+            <div class="problem-details">
+                <h2>Problem Description</h2>
+                <p>{{ problem.description }}</p>
+                <h2>Sample Test Cases</h2>
+                {% for testcase in sample_test_cases %}
+                <div class="input-output">
+                    <h3>Input</h3>
+                    <pre>{{ testcase.input_data }}</pre>
+                    <h3>Output</h3>
+                    <pre>{{ testcase.output_data }}</pre>
+                </div>
+                {% empty %}
+                <p>No sample test cases available.</p>
+                {% endfor %}
+                <h2>Constraints</h2>
+                <p>{{ problem.constraints }}</p>
+            </div>
+            <div class="editor">
+                <textarea id="code-editor" name="code" placeholder="Write your code here..."></textarea>
+                <div class="button-container">
+                    <button id="run-code">Run</button>
+                    <button id="submit-code">Submit</button>
+                    <button id="fullscreen-btn">Toggle Fullscreen</button>
+                    <select id="theme-select">
+                        <option value="default">Default</option>
+                        <option value="dracula">Dracula</option>
+                        <option value="eclipse">Eclipse</option>
+                    </select>
+                    <select id="fontsize-select">
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="output-panel" style="display: none;">
+            <h2>Output</h2>
+            <pre id="output"></pre>
+            <p id="result-message" class="test-case-status"></p>
+        </div>
+        <a href="{% url 'contest_list' %}" class="btn-back">Back to Problems List</a>
+    </div>
+
+    <div class="fullscreen-container" id="fullscreen-container">
+        <button class="btn-back" id="fullscreen-back-btn">Back to Previous View</button>
+        <div class="editor">
+            <textarea id="fullscreen-code-editor" name="code" placeholder="Write your code here..."></textarea>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize CodeMirror
+            const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                mode: 'text/x-c++src',
+                lineNumbers: true,
+                theme: 'default',
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                lineWrapping: true,
+                autoRefresh: true,
+                styleActiveLine: true
+            });
+
+            // Prettify code by default after a change in editor
+            editor.on('change', () => {
+                editor.setValue(CodeMirror.autoFormatRange(editor, {line: 0, ch: 0}, {line: editor.lineCount(), ch: 0}));
+            });
+
+            // Handle theme change
+            document.getElementById('theme-select').addEventListener('change', (e) => {
+                editor.setOption('theme', e.target.value);
+            });
+
+            // Handle font size change
+            document.getElementById('fontsize-select').addEventListener('change', (e) => {
+                editor.getWrapperElement().style.fontSize = e.target.value;
+                editor.refresh();
+            });
+
+            document.getElementById('run-code').addEventListener('click', () => {
+                const code = editor.getValue();
+                const problemId = {{ problem.id }};  // Dynamically fetch the problem ID
+                fetch(`/execute_code/${problemId}/`, {  // Include problem ID in the URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ code: code })
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    handleResponse({ error: 'Error occurred' });
+                });
+            });
+            function handleResponse(data) {
+                const outputPanel = document.getElementById('output-panel');
+                const outputPre = document.getElementById('output');
+                const resultMessage = document.getElementById('result-message');
+
+                outputPanel.style.display = 'block';
+                outputPre.textContent = ''; // Clear previous output
+
+                if (data.error) {
+                    outputPre.textContent = `Error:\n${data.error}`;
+                    resultMessage.textContent = ''; // Clear previous result message
+                } else {
+                    let resultText = '';
+                    data.results.forEach(result => {
+                        resultText += `Input:\n${result.input}\n\n`;
+                        resultText += `Output:\n${result.output}\n\n`;
+                        resultText += `Expected Output:\n${result.expected_output}\n\n`;
+                        resultText += `Errors:\n${result.errors}\n\n`;
+                        resultText += `Result Message:\n${result.result_message}\n\n`;
+                    });
+
+                    outputPre.textContent = resultText.trim();
+                    resultMessage.textContent = ''; // Clear previous result message if needed
+                }
             }
+
+            // Submit code button functionality
+            document.getElementById('submit-code').addEventListener('click', () => {
+                const code = editor.getValue();
+                const problemId = {{ problem.id }};  // Dynamically fetch the problem ID
+                fetch(`/problem/${problemId}/submit/`, {  // Corrected URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ code: code })
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    handleResponse({ error: 'Error occurred' });
+                });
+            });
+            
+            // Toggle fullscreen
+            document.getElementById('fullscreen-btn').addEventListener('click', () => {
+                const fullscreenContainer = document.getElementById('fullscreen-container');
+                fullscreenContainer.style.display = 'flex';
+            });
+
+            document.getElementById('fullscreen-back-btn').addEventListener('click', () => {
+                const fullscreenContainer = document.getElementById('fullscreen-container');
+                fullscreenContainer.style.display = 'none';
+            });
         });
     </script>
 </body>

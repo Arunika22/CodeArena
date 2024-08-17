@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ contest.name }}</title>
     <style>
-        /* Updated CSS for Contest Detail Page */
+        /* CSS for Contest Detail Page */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f4;
@@ -125,7 +125,7 @@
 </head>
 <body>
     <div class="container">
-        <h1><p>Contest :{{ contest.name }}</h1>
+        <h1>Contest: {{ contest.name }}</h1>
         <p>{{ contest.description }}</p>
         <p><strong>Start Time:</strong> {{ contest.start_time }}</p>
         <p><strong>End Time:</strong> {{ contest.end_time }}</p>
@@ -140,7 +140,7 @@
         </ul>
 
         <h2 id="leaderboard-toggle">Leaderboard</h2>
-        <div id="leaderboard">
+        <div id="leaderboard" class="hidden">
             <table>
                 <thead>
                     <tr>

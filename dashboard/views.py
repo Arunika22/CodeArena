@@ -75,7 +75,6 @@ def compile_code(request):
             if not code.strip():
                 return JsonResponse({'output': '', 'errors': 'Code is empty.'}, status=400)
 
-            # num_input_operations,has_input = requires_input(code)
             num_input_operations, has_input = requires_input(code)
             print(num_input_operations)
             # Get the variable types from the code
@@ -164,7 +163,7 @@ def extract_error_lines(errors):
         match = error_pattern.match(line)
         if match:
             file_path, line_number, column_number, error_message = match.groups()
-            error_lines.append(f"Line {line_number}, Column {column_number}: {error_message}")
+            error_lines.append(f"Line {int(line_number)-2}, Column {column_number}: {error_message}")
 
     return '\n'.join(error_lines)
 
@@ -570,15 +569,11 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 
 
-
+from django.utils import timezone
 # View to list all contests and delete past contests
 def contest_list(request):
-    # Delete contests whose end time has passed
-    Contest.objects.filter(end_time__lt=timezone.now()).delete()
-
-    # Fetch all remaining contests
-    contests = Contest.objects.all()
-    
+    now = timezone.now()
+    contests = Contest.objects.filter(end_time__gte=now)
     return render(request, 'contest_list.html', {'contests': contests})
 @login_required
 def add_contest(request):
@@ -610,8 +605,32 @@ def add_contest(request):
     else:
         form = ContestForm()
     return render(request, 'add_contest.html', {'form': form, 'problems': problems})
+from django.utils.timezone import localtime
+
+
+
 def contest_detail(request, contest_id):
     contest = get_object_or_404(Contest, id=contest_id)
+    now = localtime(timezone.now())  # Convert current time to local timezone
+
+    # Convert contest start and end times to local timezone
+    contest_start_time = localtime(contest.start_time)
+    contest_end_time = localtime(contest.end_time)
+
+    # Debug print statements to verify times
+    print("Contest Start Time:", contest_start_time)
+    print("Current Time:", now)
+    print("Contest End Time:", contest_end_time)
+
+    # Check if the contest has not started yet
+    if contest_start_time > now:
+        return render(request, 'contest_not_started.html', {'contest': contest})
+
+    # Check if the contest has ended
+    if contest_end_time < now:
+        return render(request, 'contest_ended.html', {'contest': contest})
+
+    # If the contest is ongoing, get the leaderboard
     leaderboard = Leaderboard.objects.filter(contest=contest).order_by('-total_score')
     
     return render(request, 'contest_detail.html', {
@@ -619,82 +638,205 @@ def contest_detail(request, contest_id):
         'leaderboard': leaderboard,
     })
 
+
 # Renamed view for problem details in the context of a contest
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+from .models import Problem, TestCase
 def contest_problem_detail(request, problem_id):
+    # Get the problem using the problem_id, return 404 if not found
     problem = get_object_or_404(Problem, id=problem_id)
-    if request.method == 'POST':
-        code = request.POST.get('code')
-        username = get_session_username(request)  # Or any session-based identification logic
 
-        # Dummy judge logic
-        status = "Passed" if "print" in code else "Failed"
-        score = 100 if status == "Passed" else 0
+    # Fetch the sample test cases associated with this problem
+    sample_test_cases = problem.test_cases.filter(is_sample=True)
 
-        # Save submission
-        submission = Submission.objects.create(
-            user=None,  # No user since it's session-based
-            problem=problem,
-            code=code,
-            status=status,
-            score=score,
-            temporary_username=username
-        )
-
-        # Update leaderboard
-        contest = problem.contests.first()
-        leaderboard_entry, created = Leaderboard.objects.get_or_create(
-            contest=contest,
-            user=None,
-            temporary_username=username,
-        )
-        leaderboard_entry.total_score += score
-        leaderboard_entry.save()
-
-        return redirect('contest_detail', contest_id=contest.id)
-    
-    return render(request, 'contest_problem_detail.html', {'problem': problem})
+    # Render the problem detail page along with the sample test cases
+    context = {
+        'problem': problem,
+        'sample_test_cases': sample_test_cases
+    }
+    return render(request, 'contest_problem_detail.html', context)
 
 
+# View to handle the submission of a solution for a problem
+@csrf_exempt
 def submit_solution(request, problem_id):
-    problem = get_object_or_404(Problem, pk=problem_id)
-    
+    problem = get_object_or_404(Problem, id=problem_id)
+    print("Submit solution request received.")
+
     if request.method == 'POST':
-        code = request.POST.get('code')
-        
-        # Prepare the code for execution
-        with tempfile.NamedTemporaryFile(suffix=".cpp", delete=False) as temp_code_file:
-            temp_code_file.write(code.encode('utf-8'))
-            temp_code_path = temp_code_file.name
-        
-        # Compilation step
-        compile_command = f"g++ {temp_code_path} -o {temp_code_path}.out"
-        compile_process = subprocess.run(compile_command, shell=True, capture_output=True)
-        
-        if compile_process.returncode != 0:
-            compile_error = compile_process.stderr.decode('utf-8')
-            return HttpResponse(f"Compilation Error: {compile_error}")
-        
-        # Execution step
-        exec_command = f"{temp_code_path}.out"
-        exec_process = subprocess.run(exec_command, input=problem.testcase_input.encode('utf-8'),
-                                      capture_output=True, timeout=5)
+        try:
+            # Parse the incoming JSON data
+            data = json.loads(request.body)
+            code = data.get('code')
 
-        if exec_process.returncode != 0:
-            exec_error = exec_process.stderr.decode('utf-8')
-            return HttpResponse(f"Runtime Error: {exec_error}")
-        
-        output = exec_process.stdout.decode('utf-8').strip()
-        
-        # Compare the output with the expected output
-        if output == problem.testcase_output.strip():
-            result = "Success"
-        else:
-            result = f"Wrong Answer: Expected '{problem.testcase_output.strip()}', but got '{output}'"
-        
-        # Optionally, save the submission to the database
-        submission = Submission(problem=problem, code=code, result=result)
-        submission.save()
-        
-        return HttpResponse(result)
+            # Debug statement to check the received code
+            print("Received code:\n", code)
 
-    return redirect('contest_problem_detail', problem_id=problem_id)
+            # Fetch additional test cases for the problem
+            test_cases = problem.test_cases.filter(is_sample=False)
+
+            # Create unique filenames for the temporary code and executable
+            unique_id = str(uuid.uuid4())
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            cpp_file = os.path.join(base_dir, f'temp_code_{unique_id}.cpp')
+            executable_file = os.path.join(base_dir, f'temp_code_{unique_id}.exe')
+
+            # Save the code to a temporary file
+            print(f"Saving code to: {cpp_file}")
+            with open(cpp_file, 'w') as file:
+                file.write(code)
+
+            # Compile the code
+            print(f"Compiling code: {cpp_file}")
+            compile_result = subprocess.run(['g++', cpp_file, '-o', executable_file], capture_output=True, text=True)
+
+            # Debug statements for compilation result
+            print("Compilation stdout:", compile_result.stdout)
+            print("Compilation stderr:", compile_result.stderr)
+
+            if compile_result.returncode != 0:
+                parsed_errors = parse_errors(compile_result.stderr)
+                return JsonResponse({'error': parsed_errors}, status=400)
+
+            results = []
+            score = 0
+            # Loop over each test case and run the compiled code
+            for test_case in test_cases:
+                print(f"Running test case: {test_case.id} with input: {test_case.input_data}")
+                # Run the compiled executable with the test case input
+                run_result = subprocess.run(
+                    [executable_file],
+                    input=test_case.input_data,
+                    text=True,
+                    capture_output=True
+                )
+                output = run_result.stdout
+                errors = run_result.stderr
+                print(f"Additional test case output:\n{output}")
+                print(f"Additional test case errors:\n{errors}")
+                # Compare the output with the expected output
+                if output.strip() == test_case.output_data.strip():
+                    result_message = 'Test case passed!'
+                    score += 20  # Adjust score for each passed test case
+                else:
+                    result_message = 'Test cases failed!'
+
+                results.append({
+                    'input': test_case.input_data,
+                    'output': output,
+                    'errors': errors,
+                    'expected_output': test_case.output_data,
+                    'result_message': result_message
+                })
+
+            # Save the submission in the database
+            submission = Submission.objects.create(
+                temporary_username=None,  # For now, no user handling
+                problem=problem,
+                code=code,
+                status="Passed" if score > 0 else "Failed",  # Set status based on score
+                score=score
+            )
+
+            # Cleanup temporary files
+            if os.path.exists(cpp_file):
+                os.remove(cpp_file)
+                print(f"Removed temporary file: {cpp_file}")
+            else:
+                print(f"CPP file not found: {cpp_file}")
+
+            if os.path.exists(executable_file):
+                os.remove(executable_file)
+                print(f"Removed executable file: {executable_file}")
+            else:
+                print(f"Executable file not found: {executable_file}")
+
+            return JsonResponse({'results': results})
+
+        except Problem.DoesNotExist:
+            return JsonResponse({'error': 'Problem not found'}, status=404)
+        except json.JSONDecodeError as e:
+            error_message = f'Invalid JSON format: {str(e)}'
+            return JsonResponse({'error': error_message}, status=400)
+        except Exception as e:
+            error_message = f'An unexpected error occurred: {str(e)}'
+            return JsonResponse({'error': error_message}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def parse_errors(stderr):
+    # This function should parse the compilation errors
+    # Here’s a basic example
+    return stderr.strip()
+
+
+
+
+#leaderboard
+from django.shortcuts import render
+from .models import Submission
+from django.http import JsonResponse
+
+def leaderboard(request):
+    # Fetch all submissions and sort by score in descending order
+    submissions = Submission.objects.all().order_by('-score')
+
+    # Prepare leaderboard data
+    leaderboard_data = []
+    for submission in submissions:
+        leaderboard_data.append({
+            'username': submission.temporary_username if submission.temporary_username else 'Anonymous',
+            'problem': submission.problem.name,
+            'score': submission.score,
+            'status': submission.status,
+            'submitted_at': submission.submitted_at
+        })
+
+    # Render the leaderboard page
+    return render(request, 'leaderboard.html', {'leaderboard': leaderboard_data})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def contest_not_started(request, contest_id):
+    contest = get_object_or_404(Contest, pk=contest_id)
+    time_until_start = (contest.start_time - now()).total_seconds()
+    return render(request, 'contest_not_started.html', {
+        'contest': contest,
+        'time_until_start_seconds': int(time_until_start),
+        'start_time_formatted': contest.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    })
+
+def contest_started(request, contest_id):
+    contest = get_object_or_404(Contest, pk=contest_id)
+    time_left = (contest.end_time - now()).total_seconds()
+    return render(request, 'contest_started.html', {
+        'contest': contest,
+        'time_left_seconds': int(time_left),
+    })
+
+def contest_ended(request, contest_id):
+    contest = get_object_or_404(Contest, pk=contest_id)
+    leaderboard = contest.get_leaderboard()  # Assumes a method to retrieve the leaderboard
+    return render(request, 'contest_ended.html', {
+        'contest': contest,
+        'leaderboard': leaderboard,
+    })

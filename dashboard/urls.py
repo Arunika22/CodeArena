@@ -16,4 +16,11 @@ urlpatterns = [
     path('contests/<int:contest_id>/', views.contest_detail, name='contest_detail'),  # Contest detail view
     path('problems/<int:problem_id>/', views.contest_problem_detail, name='contest_problem_detail'), 
     path('problem/<int:problem_id>/submit/', views.submit_solution, name='submit_solution'),
+    path('contest/<int:contest_id>/not-started/', views.contest_not_started, name='contest_not_started'),
+   
+    path('contest/<int:contest_id>/ended/', views.contest_ended, name='contest_ended'),
+    path('leaderboard/',views.leaderboard,name='leaderboard')
+    # Main view to handle contest state
+
+
 ]

@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contest Ended</title>
+    <link rel="stylesheet" href="{% static 'css/contest.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #d9534f;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .leaderboard {
+            margin-top: 30px;
+        }
+        .leaderboard h2 {
+            margin-bottom: 20px;
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .leaderboard-table th {
+            background-color: #007bff;
+            color: white;
+        }
+        .leaderboard-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .leaderboard-table td {
+            color: #333;
+        }
+        .btn-back {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            text-align: center;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Contest Ended</h1>
+        <p>Thank you for participating in the contest. Check out the leaderboard below to see the results!</p>
+
+        <div class="leaderboard">
+            <h2>Leaderboard</h2>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rank, user in leaderboard %}
+                    <tr>
+                        <td>{{ rank }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.score }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No participants yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{% url 'contest_list' %}" class="btn-back">Back to Contest List</a>
+    </div>
+</body>
+</html>

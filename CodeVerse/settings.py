@@ -108,3 +108,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# settings.py
+USE_TZ = True  # Ensure timezone support is enabled
+TIME_ZONE = 'Asia/Kolkata'  # Set this to Indian Standard Time (IST)

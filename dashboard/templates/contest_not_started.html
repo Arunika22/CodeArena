@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contest Not Started</title>
+    <link rel="stylesheet" href="{% static 'css/contest.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .countdown-timer {
+            font-size: 1.5em;
+            color: #d9534f;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ contest.title }}</h1>
+        <p>The contest has not started yet. Please wait for the timer to count down!</p>
+
+        <div class="countdown-timer">
+            <strong>Time until start: </strong> <span id="time-left">{{ contest.start_time_formatted }}</span>
+        </div>
+
+        <script>
+            let timeLeft = parseInt("{{ contest.time_until_start_seconds }}");
+            const timeDisplay = document.getElementById('time-left');
+
+            function updateTime() {
+                if (timeLeft > 0) {
+                    const hours = Math.floor(timeLeft / 3600);
+                    const minutes = Math.floor((timeLeft % 3600) / 60);
+                    const seconds = timeLeft % 60;
+                    timeDisplay.textContent = `${hours}h ${minutes}m ${seconds}s`;
+                    timeLeft--;
+                } else {
+                    clearInterval(timer);
+                    location.reload(); // Reload the page when the timer reaches zero
+                }
+            }
+
+            const timer = setInterval(updateTime, 1000);
+        </script>
+    </div>
+</body>
+</html>
