@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 import subprocess
@@ -617,11 +618,6 @@ def contest_detail(request, contest_id):
     contest_start_time = localtime(contest.start_time)
     contest_end_time = localtime(contest.end_time)
 
-    # Debug print statements to verify times
-    print("Contest Start Time:", contest_start_time)
-    print("Current Time:", now)
-    print("Contest End Time:", contest_end_time)
-
     # Check if the contest has not started yet
     if contest_start_time > now:
         return render(request, 'contest_not_started.html', {'contest': contest})
@@ -631,12 +627,46 @@ def contest_detail(request, contest_id):
         return render(request, 'contest_ended.html', {'contest': contest})
 
     # If the contest is ongoing, get the leaderboard
-    leaderboard = Leaderboard.objects.filter(contest=contest).order_by('-total_score')
+    submissions = Submission.objects.filter(problem__in=contest.problems.all())
     
+    # Dictionary to store the highest score for each problem by each user
+    user_problem_scores = defaultdict(lambda: defaultdict(int))
+    
+    # Collect the highest scores for each user-problem pair
+    for submission in submissions:
+        username = submission.temporary_username if submission.temporary_username else 'Anonymous'
+        problem_id = submission.problem.id
+        score = submission.score
+        
+        if score > user_problem_scores[username][problem_id]:
+            user_problem_scores[username][problem_id] = score
+
+    # Dictionary to store the total score for each user
+    leaderboard_data = defaultdict(int)
+
+    # Calculate the total score by summing the highest scores for all problems
+    for user, problem_scores in user_problem_scores.items():
+        total_score = sum(problem_scores.values())
+        leaderboard_data[user] = total_score
+
+    # Create a sorted leaderboard list (by total score)
+    leaderboard_list = sorted(
+        [{'username': username, 'total_score': score} 
+         for username, score in leaderboard_data.items()],
+        key=lambda x: x['total_score'],
+        reverse=True
+    )
+
+    # Add rank to each user
+    for rank, entry in enumerate(leaderboard_list, start=1):
+        entry['rank'] = rank
+
+    # Pass contest and leaderboard data to the template
     return render(request, 'contest_detail.html', {
         'contest': contest,
-        'leaderboard': leaderboard,
+        'leaderboard': leaderboard_list,
     })
+
 
 
 # Renamed view for problem details in the context of a contest
@@ -731,8 +761,10 @@ def submit_solution(request, problem_id):
                 })
 
             # Save the submission in the database
+            username = get_session_username(request)
+
             submission = Submission.objects.create(
-                temporary_username=None,  # For now, no user handling
+                temporary_username=username,  # For now, no user handling
                 problem=problem,
                 code=code,
                 status="Passed" if score > 0 else "Failed",  # Set status based on score
@@ -773,28 +805,6 @@ def parse_errors(stderr):
 
 
 
-#leaderboard
-from django.shortcuts import render
-from .models import Submission
-from django.http import JsonResponse
-
-def leaderboard(request):
-    # Fetch all submissions and sort by score in descending order
-    submissions = Submission.objects.all().order_by('-score')
-
-    # Prepare leaderboard data
-    leaderboard_data = []
-    for submission in submissions:
-        leaderboard_data.append({
-            'username': submission.temporary_username if submission.temporary_username else 'Anonymous',
-            'problem': submission.problem.name,
-            'score': submission.score,
-            'status': submission.status,
-            'submitted_at': submission.submitted_at
-        })
-
-    # Render the leaderboard page
-    return render(request, 'leaderboard.html', {'leaderboard': leaderboard_data})
 
 
 

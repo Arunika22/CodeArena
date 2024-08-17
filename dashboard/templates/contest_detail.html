@@ -145,24 +145,28 @@
                 <thead>
                     <tr>
                         <th>Rank</th>
-                        <th>User</th>
-                        <th>Score</th>
+                        <th>Username</th>
+                        <th>Total Score</th>
                     </tr>
                 </thead>
-                <tbody>
+            
                     {% for entry in leaderboard %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ entry.temporary_username }}</td>
-                        <td>{{ entry.total_score }}</td>
-                    </tr>
+                        <tr>
+                            <td>{{ entry.rank }}</td>
+                            <td>{{ entry.username }}</td>
+                            <td>{{ entry.total_score }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No leaderboard entries found.</td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
     <script>
-        // JavaScript for Contest Detail Page
+        // JavaScript for toggling the leaderboard visibility
         document.addEventListener('DOMContentLoaded', function() {
             const leaderboardToggle = document.getElementById('leaderboard-toggle');
             const leaderboard = document.getElementById('leaderboard');
