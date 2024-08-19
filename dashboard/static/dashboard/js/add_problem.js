@@ -50,7 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
             event.target.closest('.testcase-group, .additional-testcase-group').remove();
         }
     });
-
+    function removeTestcase(button) {
+        const testcaseGroup = button.closest('.testcase-group, .additional-testcase-group');
+        if (testcaseGroup) {
+            testcaseGroup.remove();
+        }
+    }
     // Form submission logic
     problemForm.addEventListener('submit', (event) => {
         event.preventDefault();
