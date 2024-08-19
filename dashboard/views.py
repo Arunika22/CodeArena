@@ -88,8 +88,7 @@ def compile_code(request):
             print(has_input)
             if has_input and num_user_input_lines < num_input_operations:
                 error_message = (
-                    f"Compilation Error: Expected {num_input_operations} input(s) but received {num_user_input_lines}. "
-                    "Ensure that your input matches the expected format and number of inputs required by your code."
+                    f"Compilation Error: Expected {num_input_operations} input(s)"
                 )
                 return JsonResponse({
                     'output': '',
@@ -164,7 +163,7 @@ def extract_error_lines(errors):
         match = error_pattern.match(line)
         if match:
             file_path, line_number, column_number, error_message = match.groups()
-            error_lines.append(f"Line {int(line_number)-2}, Column {column_number}: {error_message}")
+            error_lines.append(f"Line {int(line_number)-1}, Column {column_number}: {error_message}")
 
     return '\n'.join(error_lines)
 
@@ -576,7 +575,6 @@ def contest_list(request):
     now = timezone.now()
     contests = Contest.objects.filter(end_time__gte=now)
     return render(request, 'contest_list.html', {'contests': contests})
-@login_required
 def add_contest(request):
     problems = Problem.objects.all()
     if request.method == 'POST':
@@ -584,10 +582,10 @@ def add_contest(request):
         if form.is_valid():
             print("Form is valid. Saving the contest...")
 
-            # Save the contest instance first
+           
             contest = form.save()
 
-            # Process many-to-many relationships
+          
             selected_problem_ids = request.POST.get('selected_problems', '').split(',')
             for problem_id in selected_problem_ids:
                 if problem_id:
@@ -797,10 +795,8 @@ def submit_solution(request, problem_id):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def parse_errors(stderr):
-    # This function should parse the compilation errors
-    # Here’s a basic example
-    return stderr.strip()
+# def parse_errors(stderr):
+#     return stderr.strip()
 
 
 

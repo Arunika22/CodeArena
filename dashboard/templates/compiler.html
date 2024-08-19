@@ -1,22 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C++ Online Compiler - CodeVerse</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'dashboard/css/compiler.css' %}">
-    <script src="{% static 'dashboard/js/compiler.js' %}?v=1.0"></script>
-
-    <meta name="csrf-token" content="{% csrf_token %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/mode/clike/clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/closebrackets.min.js"></script> <!-- Auto-closing brackets -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/matchbrackets.min.js"></script> <!-- Matching brackets -->
-</head>
-
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>C++ Online Compiler - CodeVerse</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'dashboard/css/compiler.css' %}">
+        <script src="{% static 'dashboard/js/compiler.js' %}?v=1.0"></script>
+    
+        {% comment %} <meta name="csrf-token" content="{% csrf_token %}"> {% endcomment %}
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/mode/clike/clike.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/closebrackets.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.8/addon/edit/matchbrackets.min.js"></script>
+    
+    </head>
 
 <body>
     <header>

@@ -36,27 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .then(data => {
-            
-            // let outputText = data.output || 'Compiled successfully with no output.';
-            
-            // if (data.errors) {
-            //     outputText += `\nErrors:\n${data.errors}`;
-            //     document.getElementById('performance-metrics').style.display = 'none';
-            // } else {
-            //     // Display performance metrics if available
-            //     if (data.execution_time) {
-            //         document.getElementById('performance-metrics').style.display = 'block';
-            //         document.getElementById('execution-time').textContent = `Execution Time: ${data.execution_time} ms`;
-            //     } else {
-            //         document.getElementById('performance-metrics').style.display = 'none';
-            //     }
-
-            //     if (data.memory_usage) {
-            //         document.getElementById('memory-usage').textContent = `Memory Usage: ${data.memory_usage} KB`;
-            //     }
-            // }
-
-            // document.getElementById('output').textContent = outputText;
+         
             let outputText = data.output || 'Compiled successfully with no output.';
             let metricsDisplay = 'none';
 
